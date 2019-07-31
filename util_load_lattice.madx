@@ -1,0 +1,42 @@
+pc = energy;
+HR = energy/0.299792458;
+
+if (energy == 100) {
+    // Run 1
+    title,"IOTA V8.5 IO 1-magnet 100MeV";
+    call,file='include/fields_1NL_100MeV.dat';
+    // Energy definition is weird - apparently Sasha R.'s 'pc' is total energy
+    //beam,particle=electron,energy=0.1005110034,npart=1.0E9,radiate=false;
+    beam,particle=electron,energy=0.1,npart=1.0E9,radiate=false;
+} elseif (energy == 150) {
+    // Usual 150MeV
+    title,"IOTA V8.5 IO 1-magnet 150MeV";
+    call,file='include/fields_1NL.dat';  
+    beam,particle=electron,energy=0.150511006,npart=1.0E9,radiate=false;    
+} else {
+    stop;
+}
+
+//Regular stuff
+call,file='include/elements.madx';
+call,file='include/lines.madx';
+
+// Run 1 only - lower RF voltage
+// rfc->volt=0.00025;
+
+use,sequence=iota;
+
+//Debugging
+option,echo,warn,info;
+
+if ( nltype >= 1 ){
+  system,'mkdir tmp';
+  // Make a real sequence, and reload it
+  save,sequence=iota,file=tmp/temp.seq,bare;
+  call,file=tmp/temp.seq;
+  use,sequence=iota;
+  // Edit to install NIO
+  call,file='util_install_NIO.madx';
+  use,sequence=iota;
+  //DUMPSEQU, SEQUENCE=iota LEVEL=1;
+}

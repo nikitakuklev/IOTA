@@ -1,0 +1,82 @@
+! mad-x command file to install integrable optics magnets
+! Date: 15/05/2019
+! A.Valishev, N.Kuklev
+
+// Octupoles
+// Run 1 configuration
+if ( nltype==1 ){
+  call,file='include/fields_octupoles.madx';
+  mu0    = 0.3;    ! phase advance over straight section
+  l0     = 1.8;    ! length of the straight section
+  nn     = 17;     ! number of nonlinear elements
+  tn     = 0.4;    ! strength of nonlinear lens
+  cn     = 0.01;   ! dimentional parameter of nonlinear lens
+  ncut   = 4;      ! cut at multipole with power. (0) no cut, (1) quadrupole only, (3) quad+oct, (4) octupole only
+  otype  = 1;      ! type of magnet (0) thin, (1) thick, only works for octupoles (ncut=4)
+  olen   = 0.07;   ! length of octupole for thick option. must be < l0/nn
+  //margin = 0.0575; ! extra margin at the start and end of insert
+  margin = 0.022375; ! extra margin at the start and end of insert
+}
+
+// NL
+// Run 1 configuration
+if ( nltype==2 ){
+  mu0    = 0.3;    ! phase advance over straight section
+  l0     = 1.8;    ! length of the straight section
+  nn     = 18;     ! number of nonlinear elements
+  tn     = 0.4;    ! strength of nonlinear lens
+  cn     = 0.01;   ! dimentional parameter of nonlinear lens
+  ncut   = 0;      ! cut at multipole with power. (0) no cut, (1) quadrupole only, (3) quad+oct, (4) octupole only
+  otype  = 0;      ! type of magnet (0) thin, (1) thick, only works for octupoles (ncut=4)
+  olen   = 0.06;   ! length of octupole for thick option. must be < l0/nn
+  margin = 0;      ! extra margin at the start and end of insert
+}
+
+musect=mu0+0.5;
+f0=l0/4.0*(1.0+1.0/tan(pi*mu0)^2);
+betae=l0/sqrt(1.0-(1.0-l0/2.0/f0)^2);
+alfae=l0/2.0/f0/sqrt(1.0-(1.0-l0/2.0/f0)^2);
+betas=l0*(1-l0/4.0/f0)/sqrt(1.0-(1.0-l0/2.0/f0)^2);
+value,f0,betae,alfae,betas,oqK,nltype,otype;
+
+ncreate1(ii,k1,k3):  macro={ nii: multipole,knl={0,k1,0,k3};    };
+ncreate2(ii,kk):     macro={ nii: octupole,l=olen,k3=kk/olen;   };
+ncreate3(ii,kk,cc):  macro={ nii: nllens,knll=kk,cnll=cc;       };
+ninstall(ii,ss,pp):  macro={ install,element=nii,at=ss,from=pp; };
+
+option,-info;
+i=0;
+while(i < nn)
+{
+  i=i+1;
+  sn=margin+(l0-2*margin)/nn*(i-0.5);
+  bn=l0*(1-sn*(l0-sn)/l0/f0)/sqrt(1.0-(1.0-l0/2.0/f0)^2);
+  knn=tn*l0/nn/bn^2;
+  cnll=cn*sqrt(bn);
+  knll=knn*cnll^2;
+  k1=knn*2;          ! 1*2!
+  k3=knn/cn^2/bn*16; ! 2/3*4!
+  if( ncut == 0){ exec,ncreate3($i,knll,cnll); }      
+  if( ncut == 1){ exec,ncreate1($i,k1,0);   }      
+  if( ncut == 3){ exec,ncreate1($i,k1,k3);  } 
+  if( ncut == 4){
+  k3scaled=k3*oqK;
+  !if( otype == 0){ k1=1e-9;exec,ncreate1($i,k1,k3scaled); } !k1=1e-9
+  if( otype == 0){ exec,ncreate1($i,0.0,k3scaled); }
+  else{ exec,ncreate2($i,k3scaled); }
+  }            
+  value,i,bn,sn,k3,k3scaled,(betas^3/bn^3);
+};
+
+seqedit,sequence=iota;
+i=0;
+while(i < nn)
+{
+  i=i+1;
+  sn=margin+(l0-2*margin)/nn*(i-0.5);
+  value,ii,sn;
+  if ( nltype == 1 ){ exec,ninstall($i,sn,nlL1); }
+  if ( nltype == 2 ){ exec,ninstall($i,sn,nlR1); }
+};
+option,info;
+endedit;

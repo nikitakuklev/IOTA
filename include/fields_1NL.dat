@@ -1,0 +1,119 @@
+! Values of quadrupole magnet gradients for 1 Nonlinear Magnet option
+dipAp = 0.029; ! main dipole half gap (iron)
+
+kq01 = -8.824391;
+kq02 = 13.24948757;
+kq03 = -13.67986962;
+kq04 = 19.77167236;
+kq05 = -10.86256001;
+kq06 = 16.23653968;
+kq07 = -8.24661099;
+kq08 = -7.3562074;
+kq09 = 14.21989577;
+kq10 = -12.55009175;
+kq11 = -13.06445567;
+kq12 = 11.98794092;
+kq13 = -10.84105489;
+kq14 = -6.79843354;
+kq15 = 5.94478451;
+kq16 = -5.50772708;
+kq17 = 3.7997295;
+kq18 = -4.48331626;
+kq19 = 6.00182502;
+kq20 = -6.78634191;
+
+kqA1R:=kq01;
+kqA2R:=kq02;
+kqA3R:=kq03;
+kqA4R:=kq04;
+ kqB1R:=kq05;
+ kqB2R:=kq06;
+ kqB3R:=kq07;
+ kqB4R:=kq08;
+ kqB5R:=kq09;
+ kqB6R:=kq10;
+kqC1R:=kq11;
+kqC2R:=kq12;
+kqC3R:=kq13;
+ kqD1R:=kq14;
+ kqD2R:=kq15;
+ kqD3R:=kq16;
+ kqD4R:=kq17;
+kqE1R:=kq18;
+kqE2R:=kq19;
+
+ kqE3:=kq20;
+
+kqA1L:=kq01;
+kqA2L:=kq02;
+kqA3L:=kq03;
+kqA4L:=kq04;
+ kqB1L:=kq05;
+ kqB2L:=kq06;
+ kqB3L:=kq07;
+ kqB4L:=kq08;
+ kqB5L:=kq09;
+ kqB6L:=kq10;
+kqC1L:=kq11;
+kqC2L:=kq12;
+kqC3L:=kq13;
+ kqD1L:=kq14;
+ kqD2L:=kq15;
+ kqD3L:=kq16;
+ kqD4L:=kq17;
+kqE1L:=kq18;
+kqE2L:=kq19;
+
+! EL solenoid
+ksEL=0;
+
+! RF voltage
+Vrf = 0.001;
+
+! sextupoles
+sk1 = 0;
+sk2 = 0;
+sk3 = 0;
+sk4 = 0;
+sk5 = 0;
+sk6 = 0;
+
+/* symmetrical case*/
+sk1r := sk1;     !SC1R
+sk1l := sk1;
+sk2r := sk2;     !SC2R 
+sk2l := sk2;
+sk3r := sk3;     !SD1R
+sk3l := sk3;
+sk4r := sk4;     !SE1R
+sk4l := sk4;
+sk5r := sk5;     !SE2R
+sk5l := sk5;
+sk6r := sk6;     !SA1
+sk6l := sk6;
+
+/*
+/* good DA, symmetric*/
+sk1 =       -281.8814977 ;
+sk2 =        509.2391799 ;
+sk3 =                  0 ;
+sk4 =                  0 ;
+sk5 =                  0 ;
+sk6 =                 70 ;
+
+
+sk1r =       -281.8814977 ;
+sk1l =       -281.8814977 ;
+sk2r =        509.2391799 ;
+sk2l =        509.2391799 ;
+sk3r =                  0 ;
+sk3l =                  0 ;
+sk4r =                  0 ;
+sk4l =                  0 ;
+sk5r =                  0 ;
+sk5l =                  0 ;
+sk6r =                 70 ;
+sk6l =                 70 ;
+*/
+
+

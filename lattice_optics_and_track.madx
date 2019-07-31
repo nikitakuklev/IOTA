@@ -1,0 +1,125 @@
+! IOTA Lattice
+! Version: 8.5.2
+! Date:    05/15/2019
+! Author: A.Romanov, A.Valishev, G.Kafka, N. Kuklev
+
+! Comments: Unofficial 1NL variant with nonlinear optics elements
+
+! Changelog:
+! 06/18/2014: rearranged the logic of input files and structure (AV)
+! 06/18/2014: added chromaticity correction sextupoles (AV)
+! 06/19/2014: changed rf harmonic to 4 (30 MHz) (AV)
+! 09/16/2014: added macros for inclusion of octupoles or nonlinear elements (AV)
+!----
+! 04/07/2015: rearranged include file (AR) 
+! 04/07/2015: added McMillan version (AR)
+! 04/07/2015: Added combined correctors (AR)
+! 04/07/2015: Sextupoles wrapped with coil spacer gaps (AR)
+! 04/07/2015: Dipoles renamed D->M, to avoid mixing with quads (ABCDE) (AR)
+! 04/07/2015: Refit lattice for the correct main dipoles' aperture 5.8cm (AR)
+! 04/07/2015: Added block for detuning calculation (AR)
+! 04/07/2015: Rearranged order and naming of "kq" constants for quad gradients in lattice specific files (kq1->kq01 and now kq01 is for A1R and index rises clockwise)
+! 04/07/2015: Added script seq1234.bat for sequential execution of selected lattices (win)
+!----
+! 05/19/2015: AV(6.6+) and AR (7.2) versions merged, resulted in 7.3
+! 05/19/2015: IMPORTANT: OCS uses wrong gap for main dipoles (this alters vertical focusing)
+!----
+! 06/25/2015: Add section for output needed for Import tool of OptimX (AR)
+! 09/23/2015: OSC updated to the latest version. DA is about 6 sigmas basing on FMA results. (AR)
+!-- v8.3
+! 03/22/2016: Elements (mostly quads) shifted to avoid mechanical constraints (AR)
+! 03/22/2016: OSC is now with 2mm delay and 7 periods in ondulator
+! 11/14/2018: Added fringe lengths into main dipoles and rematched 1NL option (loption=1) (AR)
+!-- v8.4
+! 03/02/2019: Added octupole elements
+! 06/10/2019: Reworked insertion script
+
+option,-echo,warn,info;
+assign,echo="out/echo";
+system,'mkdir seq';
+system,'mkdir out';
+
+// Switch sextupoles on (1) or off (0)
+sext = 0;
+// Pick 100 or 150 MeV energy
+energy = 100;
+// Add nonlinear insertion devices: none (0), octupoles (1), NL magnet (2)
+// See util_install_NIO.madx for insert parameters
+nltype = 1;
+
+!**** Don't edit below this line 
+
+// Load lattice
+call,file='util_load_lattice.madx';
+
+seqedit,sequence=iota;
+ flatten;
+ cycle, start=ioR;
+ flatten;
+endedit;
+
+!**** Plot optics
+use,sequence=iota; twiss;
+setplot, post=2, ysize=15;
+plot,table=twiss,haxis=s,vaxis1=betx,bety,vaxis2=dx,hmin=0,hmax=40,vmin=0,-3,vmax=10,3,
+    colour=100,interpolate=true,file="out/plot_1IO",noversion;
+// Mirror half, compact plot
+plot,table=twiss,haxis=s,vaxis1=betx,bety,vaxis2=dx,hmin=0,hmax=20,vmin=0,-3,vmax=10,3,
+    colour=100,interpolate=true,file="out/plot_1IO",noversion,notitle,noline;
+    
+!**** Dump twiss table
+select,flag=twiss,clear;
+twiss,chrom,sequence=iota,file="out/twiss_1IO.tfs";
+    
+!**** Dump the sequence
+save,sequence=iota,beam,file="seq/lattice_1IO.seq";
+
+// Enable SR, redo beam calcs (due to save)
+use,sequence=iota;
+beam,radiate;twiss;emit;
+
+!**** Print survey
+use,sequence=iota;
+select, flag=survey, column=name,s,x,z;
+survey, file="out/survey_test";
+select, flag=survey, clear;
+
+!**** Prepare thin sequence
+option,echo,warn,info;
+use,sequence=iota;
+select,flag=makethin,clear;
+select,flag=makethin,class=sbend,slice=16;
+select,flag=makethin,class=quadrupole,slice=16;
+select,flag=makethin,class=sextupole,slice=4;
+select,flag=makethin,class=octupole,slice=4;
+makethin,sequence=iota,style=teapot,makedipedge;
+use,sequence=iota;
+
+!**** Plot thin optics
+beam,radiate=false;twiss;
+plot,table=twiss,haxis=s,vaxis1=betx,bety,vaxis2=dx,hmin=0,hmax=40,vmin=0,-3,vmax=10,3,
+    colour=100,interpolate=true,file="out/plot_1IO",noversion;
+
+/*
+!**** Dump thin twiss table
+select,flag=twiss,clear;
+twiss,sequence=iota,file="out/twiss_1IO_thin.tfs";
+*/
+
+!**** Dump the sequence
+// This crashes madx...interesting
+//save,sequence=iota,beam,file="seq/lattice_1IO_thin.seq";
+
+!**** Track almost 'reference' particle
+use,sequence=iota;
+beam,radiate;twiss;emit;
+track,dump,damp=true,quantum=true,recloss,onetable,file="trackdata_xonly";
+    start;
+    start,X=0.01;
+    start,X=0.02;
+    !start,X=0.03;    
+    !observe,place="ioR";
+    run,turns=1000,ffile=1;
+endtrack;
+
+stop;

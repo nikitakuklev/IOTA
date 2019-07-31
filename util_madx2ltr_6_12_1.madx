@@ -1,0 +1,35 @@
+option,-echo,warn,info;
+assign,echo="out/echo";
+
+// Switch sextupoles on (1) or off (0)
+sext = 0;
+// Pick 100 or 150 MeV energy
+energy = 100;
+// Add nonlinear insertion devices: none (0), octupoles (1), NL magnet (2)
+// See util_install_NIO.madx for insert parameters
+nltype = 1;
+
+call,file='util_load_lattice.madx';
+
+//For debugging
+option,echo,warn,info;
+
+!**** Prepare thin sequence
+!option,-echo,warn,info;
+
+use,sequence=iota;
+select,flag=makethin,clear;
+select,flag=makethin,class=sbend,slice=6;
+select,flag=makethin,class=quadrupole,slice=12;
+!select,flag=makethin,class=sextupole,slice=4;
+select,flag=makethin,class=octupole,slice=1;
+makethin,sequence=iota,style=teapot,makedipedge;
+
+use,sequence=iota;
+//beam,radiate;twiss;emit;
+
+!show,n11;
+
+call,file='helper_madx2ltr_noload.madx';
+
+stop;

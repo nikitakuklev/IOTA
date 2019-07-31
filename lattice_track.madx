@@ -1,0 +1,58 @@
+option,-echo,warn,info;
+assign,echo="out/echo";
+
+// Switch sextupoles on (1) or off (0)
+sext = 0;
+// Pick 100 or 150 MeV energy
+energy = 100;
+// Add nonlinear insertion devices: none (0), octupoles (1), NL magnet (2)
+// See util_install_NIO.madx for insert parameters
+nltype = 0;
+
+call,file='util_load_lattice.madx';
+
+seqedit,sequence=iota;
+flatten;
+cycle, start=ioR;
+endedit;
+
+//For debugging
+option,echo,warn,info;
+
+!**** Prepare thin sequence
+option,-echo,warn,info;
+
+use,sequence=iota;
+select,flag=makethin,clear;
+select,flag=makethin,class=sbend,slice=16;
+select,flag=makethin,class=quadrupole,slice=16;
+select,flag=makethin,class=sextupole,slice=4;
+select,flag=makethin,class=octupole,slice=4;
+makethin,sequence=iota,style=teapot,makedipedge;
+
+option,tell;
+
+use,sequence=iota;
+beam,radiate=false;
+twiss;emit;
+
+!**** Track
+!**** Calls python-generated files
+option,-echo,warn,-info,trace;
+option,trace;
+!use,sequence=iota;
+!beam,radiate;twiss;emit;
+call,file='track/lattice_track_setup.madx';
+call,file='track/lattice_track_run1.madx';
+call,file='track/lattice_track_run2.madx';
+call,file='track/lattice_track_run3.madx';
+call,file='track/lattice_track_run4.madx';
+call,file='track/lattice_track_run5.madx';
+call,file='track/lattice_track_run6.madx';
+call,file='track/lattice_track_run7.madx';
+call,file='track/lattice_track_run8.madx';
+call,file='track/lattice_track_run9.madx';
+call,file='track/lattice_track_run10.madx';
+option,echo,warn,info;
+call,file='track/lattice_track_end.madx';
+stop;

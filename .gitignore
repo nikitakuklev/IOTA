@@ -1,5 +1,14 @@
-#track results directories
+#track results
 track/*/*
+trackdata*
+
+#outputs
+out/*
+tmp/*
+seq/*
+
+#FMA
+*.fma
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
